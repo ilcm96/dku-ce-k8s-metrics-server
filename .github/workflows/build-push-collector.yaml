@@ -7,14 +7,14 @@ on:
     paths:
       - 'collector/**'
       - 'Dockerfile.collector'
-      - '.github/workflows/build-push-collector.yml'
+      - '.github/workflows/build-push-collector.yaml'
 
 jobs:
   build-and-push-collector:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@4
+        uses: actions/checkout@v4
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -24,7 +24,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GHCR_SECRET }}
       
       - name: Build and push Collector Image
         uses: docker/build-push-action@v6
