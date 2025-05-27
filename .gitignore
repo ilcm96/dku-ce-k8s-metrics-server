@@ -4,5 +4,6 @@ bin/
 
 .env
 .DS_Store
+repomix-output.xml
 
 *.old
