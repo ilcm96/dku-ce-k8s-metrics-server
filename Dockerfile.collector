@@ -1,0 +1,22 @@
+FROM golang:1.24-alpine AS builder
+
+WORKDIR /src
+COPY shared/go.mod shared/go.sum* /src/shared/
+COPY collector/go.mod collector/go.sum* /src/collector/
+COPY shared/ /src/shared/
+
+WORKDIR /src/collector
+RUN go mod download
+
+COPY collector/ /src/collector/
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o /src/collector/collector main.go
+
+FROM alpine:latest
+
+WORKDIR /app
+
+COPY --from=builder /src/collector/collector .
+
+EXPOSE 9000
+
+ENTRYPOINT ["/app/collector"]
