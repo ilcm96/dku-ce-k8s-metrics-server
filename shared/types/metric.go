@@ -21,7 +21,7 @@ type NodeMetric struct {
 	CPUTotal        float64 `json:"cpuTotal"`
 	CPUBusy         float64 `json:"cpuBusy"`
 	MemoryTotal     uint64  `json:"memoryTotal"`
-	MemoryAvailable uint64  `json:"memoryAvailable,omitempty"`
+	MemoryAvailable uint64  `json:"memoryAvailable"`
 	MemoryUsed      uint64  `json:"memoryUsed"`
 	DiskReadBytes   uint64  `json:"diskReadBytes"`
 	DiskWriteBytes  uint64  `json:"diskWriteBytes"`

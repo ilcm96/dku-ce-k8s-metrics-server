@@ -10,7 +10,7 @@ import (
 type NodeMemoryMetric struct {
 	Timestamp time.Time `json:"timestamp"`
 	Total     uint64    `json:"total"`
-	Available uint64    `json:"available,omitempty"`
+	Available uint64    `json:"available"`
 	Used      uint64    `json:"used"`
 }
 
