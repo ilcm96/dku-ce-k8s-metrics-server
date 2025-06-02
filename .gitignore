@@ -5,5 +5,5 @@ bin/
 .env
 .DS_Store
 repomix-output.xml
-
+main
 *.old

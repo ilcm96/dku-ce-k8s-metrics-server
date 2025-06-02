@@ -1,0 +1,22 @@
+FROM golang:1.24-alpine AS builder
+
+WORKDIR /src
+COPY shared/go.mod shared/go.sum* /src/shared/
+COPY aggregator/go.mod aggregator/go.sum* /src/aggregator/
+COPY shared/ /src/shared/
+
+WORKDIR /src/aggregator
+RUN go mod download
+
+COPY aggregator/ /src/aggregator/
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o /src/aggregator/aggregator main.go
+
+FROM alpine:latest
+
+WORKDIR /app
+
+COPY --from=builder /src/aggregator/aggregator .
+
+EXPOSE 9000
+
+ENTRYPOINT ["/app/aggregator"]
