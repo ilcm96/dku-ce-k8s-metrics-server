@@ -7,3 +7,4 @@ bin/
 repomix-output.xml
 main
 *.old
+.swp
