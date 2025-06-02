@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metric-aggregator-deployment
+  namespace: metrics-server-ns
+  labels:
+    app: metric-aggregator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metric-aggregator
+  template:
+    metadata:
+      labels:
+        app: metric-aggregator
+    spec:
+      serviceAccountName: metric-aggregator-sa
+      restartPolicy: Always
+      containers:
+      - name: metric-aggregator-container
+        image: ghcr.io/ilcm96/dku-ce-k8s-metrics-server/aggregator:latest
+        imagePullPolicy: Always
+        env:
+        - name: ENV
+          value: "production"
+        - name: DB_USER
+          value: "user"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: DB_PASSWORD
+        - name: DB_HOST
+          value: "10.0.10.115"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "database"

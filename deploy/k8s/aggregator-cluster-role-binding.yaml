@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: metric-aggregator-cluster-role-binding
+subjects:
+- kind: ServiceAccount
+  name: metric-aggregator-sa
+  namespace: metrics-server-ns
+roleRef:
+  kind: ClusterRole
+  name: metric-aggregator-cluster-role
+  apiGroup: rbac.authorization.k8s.io
