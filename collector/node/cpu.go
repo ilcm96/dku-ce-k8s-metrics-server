@@ -2,15 +2,13 @@ package node
 
 import (
 	"encoding/json"
-	"time"
 
 	"github.com/shirou/gopsutil/v4/cpu"
 )
 
 type NodeCpuMetric struct {
-	Timestamp time.Time `json:"timestamp"`
-	Total     float64   `json:"total"`
-	Busy      float64   `json:"busy"`
+	Total float64 `json:"total"`
+	Busy  float64 `json:"busy"`
 }
 
 func (c NodeCpuMetric) String() string {
@@ -37,8 +35,7 @@ func CollectNodeCpuMetric() (NodeCpuMetric, error) {
 	busy := total - cpuTime.Idle - cpuTime.Iowait
 
 	return NodeCpuMetric{
-		Timestamp: time.Now(),
-		Total:     total,
-		Busy:      busy,
+		Total: total,
+		Busy:  busy,
 	}, nil
 }

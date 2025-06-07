@@ -2,16 +2,14 @@ package node
 
 import (
 	"encoding/json"
-	"time"
 
 	"github.com/shirou/gopsutil/v4/mem"
 )
 
 type NodeMemoryMetric struct {
-	Timestamp time.Time `json:"timestamp"`
-	Total     uint64    `json:"total"`
-	Available uint64    `json:"available"`
-	Used      uint64    `json:"used"`
+	Total     uint64 `json:"total"`
+	Available uint64 `json:"available"`
+	Used      uint64 `json:"used"`
 }
 
 func (m NodeMemoryMetric) String() string {
@@ -25,7 +23,6 @@ func CollectNodeMemoryMetric() (NodeMemoryMetric, error) {
 		return NodeMemoryMetric{}, err
 	}
 	return NodeMemoryMetric{
-		Timestamp: time.Now(),
 		Total:     virtualMemory.Total,
 		Available: virtualMemory.Available,
 		Used:      virtualMemory.Used,

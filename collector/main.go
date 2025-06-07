@@ -37,7 +37,7 @@ func collect(w http.ResponseWriter, r *http.Request) {
 	}
 
 	metric := Metric{
-		Timestamp:  time.Now(),
+		Timestamp:  time.Now().Truncate(time.Minute),
 		NodeMetric: nodeMetric,
 		PodMetric:  podMetrics,
 	}
