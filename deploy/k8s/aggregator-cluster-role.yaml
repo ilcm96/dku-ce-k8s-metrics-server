@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: metric-aggregator-cluster-role
+  name: metrics-aggregator-cluster-role
 rules:
 - apiGroups: [""]
   resources: ["nodes", "pods", "namespaces", "services", "endpoints"]

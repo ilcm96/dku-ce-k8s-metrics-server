@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: metric-aggregator-deployment
+  name: metrics-aggregator-deployment
   namespace: metrics-server-ns
   labels:
-    app: metric-aggregator
+    app: metrics-aggregator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: metric-aggregator
+      app: metrics-aggregator
   template:
     metadata:
       labels:
-        app: metric-aggregator
+        app: metrics-aggregator
     spec:
-      serviceAccountName: metric-aggregator-sa
+      serviceAccountName: metrics-aggregator-sa
       restartPolicy: Always
       containers:
-      - name: metric-aggregator-container
+      - name: metrics-aggregator-container
         image: ghcr.io/ilcm96/dku-ce-k8s-metrics-server/aggregator:latest
         imagePullPolicy: Always
         env:
