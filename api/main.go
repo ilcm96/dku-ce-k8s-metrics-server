@@ -43,14 +43,17 @@ func main() {
 	nodeRepository := repository.NewNodeRepository(db)
 	podRepository := repository.NewPodRepository(db)
 	namespaceRepository := repository.NewNamespaceRepository(db)
+	deploymentRepository := repository.NewDeploymentRepository(db)
 
 	nodeService := service.NewNodeService(nodeRepository)
 	podService := service.NewPodService(podRepository)
 	namespaceService := service.NewNamespaceService(namespaceRepository)
+	deploymentService := service.NewDeploymentService(deploymentRepository)
 
 	nodeController := controller.NewNodeController(nodeService, podService)
 	podController := controller.NewPodController(podService)
 	namespaceController := controller.NewNamespaceController(namespaceService)
+	deploymentController := controller.NewDeploymentController(deploymentService)
 
 	// 라우트 설정
 	app.Get("/api/nodes", nodeController.GetMetricsList)
@@ -63,6 +66,10 @@ func main() {
 	app.Get("/api/namespaces", namespaceController.GetMetricsList)
 	app.Get("/api/namespaces/:namespaceName", namespaceController.GetMetricsByNamespaceName)
 	app.Get("/api/namespaces/:namespaceName/pods", namespaceController.GetPodMetricsListByNamespaceName)
+
+	app.Get("/api/namespaces/:namespaceName/deployments", deploymentController.GetDeploymentsByNamespaceName)
+	app.Get("/api/namespaces/:namespaceName/deployments/:deploymentName", deploymentController.GetMetricsByDeploymentName)
+	app.Get("/api/namespaces/:namespaceName/deployments/:deploymentName/pods", deploymentController.GetPodMetricsByDeploymentName)
 
 	// 실행
 	err := app.Listen(":" + os.Getenv("PORT"))
