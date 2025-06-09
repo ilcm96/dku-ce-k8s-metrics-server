@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/entity"
 	"github.com/jmoiron/sqlx"
 )
@@ -8,6 +10,7 @@ import (
 type NodeRepository interface {
 	FindAll() ([]*entity.NodeMetrics, error)
 	FindByNodeName(nodeName string) ([]*entity.NodeMetrics, error)
+	FindByNodeNameInTimeWindow(nodeName string, startTime, endTime time.Time) ([]*entity.NodeMetrics, error)
 }
 
 type nodeRepository struct {
@@ -59,6 +62,29 @@ func (r *nodeRepository) FindByNodeName(nodeName string) ([]*entity.NodeMetrics,
 
 	var metrics []*entity.NodeMetrics
 	err := r.db.Select(&metrics, query, nodeName)
+	if err != nil {
+		return nil, err
+	}
+
+	return metrics, nil
+}
+
+// FindByNodeNameInTimeWindow 는 주어진 노드명과 시간 범위에 대한 메트릭을 조회합니다.
+func (r *nodeRepository) FindByNodeNameInTimeWindow(nodeName string, startTime, endTime time.Time) ([]*entity.NodeMetrics, error) {
+	query := `
+		SELECT
+			id, timestamp, node_name, cpu_total, cpu_busy,
+			memory_total, memory_available, memory_used,
+			disk_read_bytes, disk_write_bytes, network_rx_bytes, network_tx_bytes
+		FROM node_metrics
+		WHERE node_name = $1
+		  AND timestamp >= $2
+		  AND timestamp <= $3
+		ORDER BY timestamp DESC;
+	`
+
+	var metrics []*entity.NodeMetrics
+	err := r.db.Select(&metrics, query, nodeName, startTime, endTime)
 	if err != nil {
 		return nil, err
 	}

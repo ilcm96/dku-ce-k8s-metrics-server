@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/entity"
 	"github.com/jmoiron/sqlx"
 )
@@ -8,6 +10,7 @@ import (
 type NamespaceRepository interface {
 	FindAll() ([]*entity.PodMetrics, error)
 	FindByNamespaceName(namespaceName string) ([]*entity.PodMetrics, error)
+	FindByNamespaceNameInTimeWindow(namespaceName string, startTime, endTime time.Time) ([]*entity.PodMetrics, error)
 }
 
 type namespaceRepository struct {
@@ -41,6 +44,29 @@ func (r *namespaceRepository) FindAll() ([]*entity.PodMetrics, error) {
 
 	var metrics []*entity.PodMetrics
 	err := r.db.Select(&metrics, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return metrics, nil
+}
+
+// FindByNamespaceNameInTimeWindow 는 주어진 네임스페이스명과 시간 범위에 대한 파드 메트릭을 조회합니다.
+func (r *namespaceRepository) FindByNamespaceNameInTimeWindow(namespaceName string, startTime, endTime time.Time) ([]*entity.PodMetrics, error) {
+	query := `
+		SELECT
+			id, timestamp, pod_name, uid, cpu_usage_usec, memory_usage,
+			disk_read_bytes, disk_write_bytes, network_rx_bytes, network_tx_bytes,
+			namespace_name, deployment_name, node_name
+		FROM pod_metrics
+		WHERE namespace_name = $1
+		  AND timestamp >= $2
+		  AND timestamp <= $3
+		ORDER BY pod_name, timestamp DESC;
+	`
+
+	var metrics []*entity.PodMetrics
+	err := r.db.Select(&metrics, query, namespaceName, startTime, endTime)
 	if err != nil {
 		return nil, err
 	}

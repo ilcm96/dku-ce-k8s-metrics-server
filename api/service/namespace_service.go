@@ -7,21 +7,25 @@ import (
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/dto"
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/entity"
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/repository"
+	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/utils"
 )
 
 type NamespaceService interface {
 	FindAll() ([]*dto.NamespaceMetricsResponse, error)
 	FindByNamespaceName(namespaceName string) (*dto.NamespaceMetricsResponse, error)
 	FindPodsByNamespaceName(namespaceName string) ([]*dto.PodMetricsResponse, error)
+	FindTimeSeriesByNamespaceName(namespaceName, window string) (*dto.NamespaceTimeSeriesResponse, error)
 }
 
 type namespaceService struct {
-	namespaceRepository repository.NamespaceRepository
+	namespaceRepository  repository.NamespaceRepository
+	timeSeriesCalculator TimeSeriesCalculator
 }
 
 func NewNamespaceService(namespaceRepository repository.NamespaceRepository) NamespaceService {
 	return &namespaceService{
-		namespaceRepository: namespaceRepository,
+		namespaceRepository:  namespaceRepository,
+		timeSeriesCalculator: NewTimeSeriesCalculator(),
 	}
 }
 
@@ -191,4 +195,38 @@ func calculateNamespaceMetrics(namespaceName string, podMetrics []*entity.PodMet
 		NetworkTxBytes: totalNetworkTxBytes,
 		PodCount:       activePodCount,
 	}
+}
+
+// FindTimeSeriesByNamespaceName 는 주어진 네임스페이스명과 윈도우에 대해 시계열 메트릭을 제공합니다.
+func (s *namespaceService) FindTimeSeriesByNamespaceName(namespaceName, window string) (*dto.NamespaceTimeSeriesResponse, error) {
+	// 윈도우 파라미터 파싱
+	windowSpec, err := utils.ParseWindow(window)
+	if err != nil {
+		slog.Error("failed to parse window parameter", "window", window, "error", err)
+		return nil, err
+	}
+
+	// 시간 범위 계산 (UTC 변환)
+	endTime := time.Now().UTC()
+	startTime := windowSpec.GetStartTime(endTime)
+
+	// 시간 범위 내의 네임스페이스 파드 메트릭 조회 (UTC 시간으로 조회)
+	metrics, err := s.namespaceRepository.FindByNamespaceNameInTimeWindow(namespaceName, startTime, endTime)
+	if err != nil {
+		slog.Error("failed to get namespace pod metrics in time window", "namespaceName", namespaceName, "startTime", startTime, "endTime", endTime, "error", err)
+		return nil, err
+	}
+
+	if len(metrics) == 0 {
+		return nil, nil
+	}
+
+	// 네임스페이스 시계열 계산
+	response, err := s.timeSeriesCalculator.CalculateNamespaceTimeSeries(namespaceName, metrics, windowSpec)
+	if err != nil {
+		slog.Error("failed to calculate namespace time series", "namespaceName", namespaceName, "error", err)
+		return nil, err
+	}
+
+	return response, nil
 }

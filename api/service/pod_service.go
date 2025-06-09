@@ -2,25 +2,30 @@ package service
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/dto"
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/entity"
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/repository"
+	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/utils"
 )
 
 type PodService interface {
 	FindAll() ([]*dto.PodMetricsResponse, error)
 	FindByPodName(podName string) (*dto.PodMetricsResponse, error)
 	FindByNodeName(nodeName string) ([]*dto.PodMetricsResponse, error)
+	FindTimeSeriesByPodName(podName, window string) (*dto.PodTimeSeriesResponse, error)
 }
 
 type podService struct {
-	podRepository repository.PodRepository
+	podRepository        repository.PodRepository
+	timeSeriesCalculator TimeSeriesCalculator
 }
 
 func NewPodService(podRepository repository.PodRepository) PodService {
 	return &podService{
-		podRepository: podRepository,
+		podRepository:        podRepository,
+		timeSeriesCalculator: NewTimeSeriesCalculator(),
 	}
 }
 
@@ -188,4 +193,38 @@ func calculatePodCpuMillicores(latest, previous *entity.PodMetrics) float64 {
 	}
 
 	return float64(deltaCpuUsage) / (interval * 1e3)
+}
+
+// FindTimeSeriesByPodName 는 주어진 파드명과 윈도우에 대해 시계열 메트릭을 제공합니다.
+func (s *podService) FindTimeSeriesByPodName(podName, window string) (*dto.PodTimeSeriesResponse, error) {
+	// 윈도우 파라미터 파싱
+	windowSpec, err := utils.ParseWindow(window)
+	if err != nil {
+		slog.Error("failed to parse window parameter", "window", window, "error", err)
+		return nil, err
+	}
+
+	// 시간 범위 계산 (UTC 변환)
+	endTime := time.Now().UTC()
+	startTime := windowSpec.GetStartTime(endTime)
+
+	// 시간 범위 내의 메트릭 조회 (UTC 시간으로 조회)
+	metrics, err := s.podRepository.FindByPodNameInTimeWindow(podName, startTime, endTime)
+	if err != nil {
+		slog.Error("failed to get pod metrics in time window", "podName", podName, "startTime", startTime, "endTime", endTime, "error", err)
+		return nil, err
+	}
+
+	if len(metrics) == 0 {
+		return nil, nil
+	}
+
+	// 시계열 계산
+	response, err := s.timeSeriesCalculator.CalculatePodTimeSeries(podName, metrics, windowSpec)
+	if err != nil {
+		slog.Error("failed to calculate pod time series", "podName", podName, "error", err)
+		return nil, err
+	}
+
+	return response, nil
 }

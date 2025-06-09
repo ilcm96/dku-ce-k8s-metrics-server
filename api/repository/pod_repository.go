@@ -1,6 +1,9 @@
 package repository
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/entity"
 	"github.com/jmoiron/sqlx"
 )
@@ -9,6 +12,7 @@ type PodRepository interface {
 	FindAll() ([]*entity.PodMetrics, error)
 	FindByPodName(podName string) ([]*entity.PodMetrics, error)
 	FindByNodeName(nodeName string) ([]*entity.PodMetrics, error)
+	FindByPodNameInTimeWindow(podName string, startTime, endTime time.Time) ([]*entity.PodMetrics, error)
 }
 
 type podRepository struct {
@@ -88,6 +92,31 @@ func (r *podRepository) FindByNodeName(nodeName string) ([]*entity.PodMetrics, e
 
 	var metrics []*entity.PodMetrics
 	err := r.db.Select(&metrics, query, nodeName)
+	if err != nil {
+		return nil, err
+	}
+
+	return metrics, nil
+}
+
+// FindByPodNameInTimeWindow 는 주어진 파드명과 시간 범위에 대한 메트릭을 조회합니다.
+func (r *podRepository) FindByPodNameInTimeWindow(podName string, startTime, endTime time.Time) ([]*entity.PodMetrics, error) {
+	fmt.Println("Finding metrics for pod:", podName, "from", startTime, "to", endTime)
+
+	query := `
+		SELECT
+			id, timestamp, pod_name, uid, cpu_usage_usec, memory_usage,
+			disk_read_bytes, disk_write_bytes, network_rx_bytes, network_tx_bytes,
+			namespace_name, deployment_name, node_name
+		FROM pod_metrics
+		WHERE pod_name = $1
+		  AND timestamp >= $2
+		  AND timestamp <= $3
+		ORDER BY timestamp DESC;
+	`
+
+	var metrics []*entity.PodMetrics
+	err := r.db.Select(&metrics, query, podName, startTime, endTime)
 	if err != nil {
 		return nil, err
 	}

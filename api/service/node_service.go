@@ -2,24 +2,29 @@ package service
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/dto"
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/entity"
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/repository"
+	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/utils"
 )
 
 type NodeService interface {
 	FindAll() ([]*dto.NodeMetricsResponse, error)
 	FindByNodeName(nodeName string) (*dto.NodeMetricsResponse, error)
+	FindTimeSeriesByNodeName(nodeName, window string) (*dto.NodeTimeSeriesResponse, error)
 }
 
 type nodeService struct {
-	nodeRepository repository.NodeRepository
+	nodeRepository       repository.NodeRepository
+	timeSeriesCalculator TimeSeriesCalculator
 }
 
 func NewNodeService(nodeRepository repository.NodeRepository) NodeService {
 	return &nodeService{
-		nodeRepository: nodeRepository,
+		nodeRepository:       nodeRepository,
+		timeSeriesCalculator: NewTimeSeriesCalculator(),
 	}
 }
 
@@ -97,6 +102,40 @@ func (s *nodeService) FindByNodeName(nodeName string) (*dto.NodeMetricsResponse,
 		DiskWriteBytes: latest.DiskWriteBytes,
 		NetworkRxBytes: latest.NetworkRxBytes,
 		NetworkTxBytes: latest.NetworkTxBytes,
+	}
+
+	return response, nil
+}
+
+// FindTimeSeriesByNodeName 는 주어진 노드명과 윈도우에 대해 시계열 메트릭을 제공합니다.
+func (s *nodeService) FindTimeSeriesByNodeName(nodeName, window string) (*dto.NodeTimeSeriesResponse, error) {
+	// 윈도우 파라미터 파싱
+	windowSpec, err := utils.ParseWindow(window)
+	if err != nil {
+		slog.Error("failed to parse window parameter", "window", window, "error", err)
+		return nil, err
+	}
+
+	// 시간 범위 계산 (UTC 변환)
+	endTime := time.Now().UTC()
+	startTime := windowSpec.GetStartTime(endTime)
+
+	// 시간 범위 내의 메트릭 조회 (UTC 시간으로 조회)
+	metrics, err := s.nodeRepository.FindByNodeNameInTimeWindow(nodeName, startTime, endTime)
+	if err != nil {
+		slog.Error("failed to get node metrics in time window", "nodeName", nodeName, "startTime", startTime, "endTime", endTime, "error", err)
+		return nil, err
+	}
+
+	if len(metrics) == 0 {
+		return nil, nil
+	}
+
+	// 시계열 계산
+	response, err := s.timeSeriesCalculator.CalculateNodeTimeSeries(nodeName, metrics, windowSpec)
+	if err != nil {
+		slog.Error("failed to calculate node time series", "nodeName", nodeName, "error", err)
+		return nil, err
 	}
 
 	return response, nil
