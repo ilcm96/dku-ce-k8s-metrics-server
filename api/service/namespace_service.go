@@ -48,7 +48,7 @@ func (s *namespaceService) FindAll() ([]*dto.NamespaceMetricsResponse, error) {
 	// 각 네임스페이스에 대해 집계 계산을 수행합니다.
 	var responses []*dto.NamespaceMetricsResponse
 	for namespaceName, podMetrics := range namespaceMetricsMap {
-		aggregatedMetrics := s.calculateNamespaceMetrics(namespaceName, podMetrics)
+		aggregatedMetrics := calculateNamespaceMetrics(namespaceName, podMetrics)
 		if aggregatedMetrics != nil {
 			responses = append(responses, aggregatedMetrics)
 		}
@@ -70,7 +70,7 @@ func (s *namespaceService) FindByNamespaceName(namespaceName string) (*dto.Names
 	}
 
 	// 네임스페이스 집계 계산을 수행합니다.
-	aggregatedMetrics := s.calculateNamespaceMetrics(namespaceName, podMetrics)
+	aggregatedMetrics := calculateNamespaceMetrics(namespaceName, podMetrics)
 	return aggregatedMetrics, nil
 }
 
@@ -114,7 +114,7 @@ func (s *namespaceService) FindPodsByNamespaceName(namespaceName string) ([]*dto
 }
 
 // calculateNamespaceMetrics 는 네임스페이스의 파드 메트릭들을 집계하여 네임스페이스 메트릭을 계산합니다.
-func (s *namespaceService) calculateNamespaceMetrics(namespaceName string, podMetrics []*entity.PodMetrics) *dto.NamespaceMetricsResponse {
+func calculateNamespaceMetrics(namespaceName string, podMetrics []*entity.PodMetrics) *dto.NamespaceMetricsResponse {
 	if len(podMetrics) == 0 {
 		return nil
 	}
