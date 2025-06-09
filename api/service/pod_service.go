@@ -1,10 +1,11 @@
 package service
 
 import (
+	"log/slog"
+
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/dto"
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/entity"
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/repository"
-	"log/slog"
 )
 
 type PodService interface {
@@ -53,8 +54,25 @@ func (s *podService) FindAll() ([]*dto.PodMetricsResponse, error) {
 
 		cpuMillicores := calculatePodCpuMillicores(latest, previous)
 
-		response := &dto.PodMetricsResponse{}
-		response.Build(cpuMillicores, latest)
+		var deploymentName *string
+		if latest.DeploymentName.Valid {
+			deploymentName = &latest.DeploymentName.String
+		}
+
+		response := &dto.PodMetricsResponse{
+			Timestamp:      latest.Timestamp,
+			PodName:        latest.PodName,
+			DeploymentName: deploymentName,
+			NamespaceName:  latest.NamespaceName,
+			NodeName:       latest.NodeName,
+			UID:            latest.UID,
+			CpuMillicores:  cpuMillicores,
+			MemoryBytes:    latest.MemoryUsage,
+			DiskReadBytes:  latest.DiskReadBytes,
+			DiskWriteBytes: latest.DiskWriteBytes,
+			NetworkRxBytes: latest.NetworkRxBytes,
+			NetworkTxBytes: latest.NetworkTxBytes,
+		}
 
 		responses = append(responses, response)
 	}
@@ -77,8 +95,25 @@ func (s *podService) FindByPodName(podName string) (*dto.PodMetricsResponse, err
 
 	cpuMillicores := calculatePodCpuMillicores(latest, previous)
 
-	response := &dto.PodMetricsResponse{}
-	response.Build(cpuMillicores, latest)
+	var deploymentName *string
+	if latest.DeploymentName.Valid {
+		deploymentName = &latest.DeploymentName.String
+	}
+
+	response := &dto.PodMetricsResponse{
+		Timestamp:      latest.Timestamp,
+		PodName:        latest.PodName,
+		DeploymentName: deploymentName,
+		NamespaceName:  latest.NamespaceName,
+		NodeName:       latest.NodeName,
+		UID:            latest.UID,
+		CpuMillicores:  cpuMillicores,
+		MemoryBytes:    latest.MemoryUsage,
+		DiskReadBytes:  latest.DiskReadBytes,
+		DiskWriteBytes: latest.DiskWriteBytes,
+		NetworkRxBytes: latest.NetworkRxBytes,
+		NetworkTxBytes: latest.NetworkTxBytes,
+	}
 
 	return response, nil
 }
@@ -113,8 +148,25 @@ func (s *podService) FindByNodeName(nodeName string) ([]*dto.PodMetricsResponse,
 
 		cpuMillicores := calculatePodCpuMillicores(latest, previous)
 
-		response := &dto.PodMetricsResponse{}
-		response.Build(cpuMillicores, latest)
+		var deploymentName *string
+		if latest.DeploymentName.Valid {
+			deploymentName = &latest.DeploymentName.String
+		}
+
+		response := &dto.PodMetricsResponse{
+			Timestamp:      latest.Timestamp,
+			PodName:        latest.PodName,
+			DeploymentName: deploymentName,
+			NamespaceName:  latest.NamespaceName,
+			NodeName:       latest.NodeName,
+			UID:            latest.UID,
+			CpuMillicores:  cpuMillicores,
+			MemoryBytes:    latest.MemoryUsage,
+			DiskReadBytes:  latest.DiskReadBytes,
+			DiskWriteBytes: latest.DiskWriteBytes,
+			NetworkRxBytes: latest.NetworkRxBytes,
+			NetworkTxBytes: latest.NetworkTxBytes,
+		}
 
 		responses = append(responses, response)
 	}

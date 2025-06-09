@@ -1,7 +1,6 @@
 package dto
 
 import (
-	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/entity"
 	"time"
 )
 
@@ -18,25 +17,4 @@ type PodMetricsResponse struct {
 	DiskWriteBytes int64     `json:"disk_write_bytes"`
 	NetworkRxBytes int64     `json:"network_rx_bytes"`
 	NetworkTxBytes int64     `json:"network_tx_bytes"`
-}
-
-func (p *PodMetricsResponse) Build(cpuMillicores float64, metrics *entity.PodMetrics) {
-	deploymentName := metrics.DeploymentName
-	if deploymentName.Valid {
-		p.DeploymentName = &deploymentName.String
-	} else {
-		p.DeploymentName = nil
-	}
-
-	p.Timestamp = metrics.Timestamp
-	p.PodName = metrics.PodName
-	p.NamespaceName = metrics.NamespaceName
-	p.NodeName = metrics.NodeName
-	p.UID = metrics.UID
-	p.CpuMillicores = cpuMillicores
-	p.MemoryBytes = metrics.MemoryUsage
-	p.DiskReadBytes = metrics.DiskReadBytes
-	p.DiskWriteBytes = metrics.DiskWriteBytes
-	p.NetworkRxBytes = metrics.NetworkRxBytes
-	p.NetworkTxBytes = metrics.NetworkTxBytes
 }

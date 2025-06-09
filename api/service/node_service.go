@@ -1,10 +1,11 @@
 package service
 
 import (
+	"log/slog"
+
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/dto"
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/entity"
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/repository"
-	"log/slog"
 )
 
 type NodeService interface {
@@ -53,8 +54,16 @@ func (s *nodeService) FindAll() ([]*dto.NodeMetricsResponse, error) {
 		cpuMillicores := calculateNodeCpuMillicores(latest, previous)
 		memoryBytes := latest.MemoryTotal - latest.MemoryAvailable
 
-		response := &dto.NodeMetricsResponse{}
-		response.Build(cpuMillicores, memoryBytes, latest)
+		response := &dto.NodeMetricsResponse{
+			Timestamp:      latest.Timestamp,
+			NodeName:       latest.NodeName,
+			CpuMillicores:  cpuMillicores,
+			MemoryBytes:    memoryBytes,
+			DiskReadBytes:  latest.DiskReadBytes,
+			DiskWriteBytes: latest.DiskWriteBytes,
+			NetworkRxBytes: latest.NetworkRxBytes,
+			NetworkTxBytes: latest.NetworkTxBytes,
+		}
 
 		responses = append(responses, response)
 	}
@@ -79,8 +88,16 @@ func (s *nodeService) FindByNodeName(nodeName string) (*dto.NodeMetricsResponse,
 	cpuMillicores := calculateNodeCpuMillicores(latest, previous)
 	memoryBytes := latest.MemoryTotal - latest.MemoryAvailable
 
-	response := &dto.NodeMetricsResponse{}
-	response.Build(cpuMillicores, memoryBytes, latest)
+	response := &dto.NodeMetricsResponse{
+		Timestamp:      latest.Timestamp,
+		NodeName:       latest.NodeName,
+		CpuMillicores:  cpuMillicores,
+		MemoryBytes:    memoryBytes,
+		DiskReadBytes:  latest.DiskReadBytes,
+		DiskWriteBytes: latest.DiskWriteBytes,
+		NetworkRxBytes: latest.NetworkRxBytes,
+		NetworkTxBytes: latest.NetworkTxBytes,
+	}
 
 	return response, nil
 }

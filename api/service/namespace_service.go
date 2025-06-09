@@ -104,8 +104,25 @@ func (s *namespaceService) FindPodsByNamespaceName(namespaceName string) ([]*dto
 
 		cpuMillicores := calculatePodCpuMillicores(latest, previous)
 
-		response := &dto.PodMetricsResponse{}
-		response.Build(cpuMillicores, latest)
+		var deploymentName *string
+		if latest.DeploymentName.Valid {
+			deploymentName = &latest.DeploymentName.String
+		}
+
+		response := &dto.PodMetricsResponse{
+			Timestamp:      latest.Timestamp,
+			PodName:        latest.PodName,
+			DeploymentName: deploymentName,
+			NamespaceName:  latest.NamespaceName,
+			NodeName:       latest.NodeName,
+			UID:            latest.UID,
+			CpuMillicores:  cpuMillicores,
+			MemoryBytes:    latest.MemoryUsage,
+			DiskReadBytes:  latest.DiskReadBytes,
+			DiskWriteBytes: latest.DiskWriteBytes,
+			NetworkRxBytes: latest.NetworkRxBytes,
+			NetworkTxBytes: latest.NetworkTxBytes,
+		}
 
 		responses = append(responses, response)
 	}
