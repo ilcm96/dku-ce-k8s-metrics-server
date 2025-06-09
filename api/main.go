@@ -1,6 +1,10 @@
 package main
 
 import (
+	"log"
+	"log/slog"
+	"os"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/controller"
@@ -9,9 +13,6 @@ import (
 	"github.com/ilcm96/dku-ce-k8s-metrics-server/api/service"
 	"github.com/joho/godotenv"
 	slogfiber "github.com/samber/slog-fiber"
-	"log"
-	"log/slog"
-	"os"
 )
 
 func main() {
@@ -41,12 +42,15 @@ func main() {
 	// 의존성 생성 및 주입
 	nodeRepository := repository.NewNodeRepository(db)
 	podRepository := repository.NewPodRepository(db)
+	namespaceRepository := repository.NewNamespaceRepository(db)
 
 	nodeService := service.NewNodeService(nodeRepository)
 	podService := service.NewPodService(podRepository)
+	namespaceService := service.NewNamespaceService(namespaceRepository)
 
 	nodeController := controller.NewNodeController(nodeService, podService)
 	podController := controller.NewPodController(podService)
+	namespaceController := controller.NewNamespaceController(namespaceService)
 
 	// 라우트 설정
 	app.Get("/api/nodes", nodeController.GetMetricsList)
@@ -55,6 +59,10 @@ func main() {
 
 	app.Get("/api/pods", podController.GetMetricsList)
 	app.Get("/api/pods/:podName", podController.GetMetricsByPodName)
+
+	app.Get("/api/namespaces", namespaceController.GetMetricsList)
+	app.Get("/api/namespaces/:namespaceName", namespaceController.GetMetricsByNamespaceName)
+	app.Get("/api/namespaces/:namespaceName/pods", namespaceController.GetPodMetricsListByNamespaceName)
 
 	// 실행
 	err := app.Listen(":" + os.Getenv("PORT"))
