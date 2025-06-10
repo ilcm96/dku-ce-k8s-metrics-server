@@ -151,7 +151,7 @@ func (c *timeSeriesCalculator) calculateNodeCpuMillicores(latest, previous *enti
 		return 0.0
 	}
 
-	return (deltaCpuBusy / deltaCpuTotal) * 1000
+	return (deltaCpuBusy / deltaCpuTotal) * 1000 * float64(latest.CPUCount)
 }
 
 // CalculatePodTimeSeries 는 파드 메트릭들로부터 시계열 데이터를 계산합니다.

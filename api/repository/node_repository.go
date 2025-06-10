@@ -33,7 +33,7 @@ func (r *nodeRepository) FindAll() ([]*entity.NodeMetrics, error) {
 		    FROM node_metrics
 		)
 		SELECT
-			id, timestamp, node_name, cpu_total, cpu_busy,
+			id, timestamp, node_name, cpu_total, cpu_busy, cpu_count,
 			memory_total, memory_available, memory_used,
 			disk_read_bytes, disk_write_bytes, network_rx_bytes, network_tx_bytes
 		FROM ranked
@@ -73,7 +73,7 @@ func (r *nodeRepository) FindByNodeName(nodeName string) ([]*entity.NodeMetrics,
 func (r *nodeRepository) FindByNodeNameInTimeWindow(nodeName string, startTime, endTime time.Time) ([]*entity.NodeMetrics, error) {
 	query := `
 		SELECT
-			id, timestamp, node_name, cpu_total, cpu_busy,
+			id, timestamp, node_name, cpu_total, cpu_busy, cpu_count,
 			memory_total, memory_available, memory_used,
 			disk_read_bytes, disk_write_bytes, network_rx_bytes, network_tx_bytes
 		FROM node_metrics

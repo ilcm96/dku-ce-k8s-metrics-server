@@ -20,6 +20,7 @@ type NodeMetric struct {
 	NodeName        string  `json:"nodeName"`
 	CPUTotal        float64 `json:"cpuTotal"`
 	CPUBusy         float64 `json:"cpuBusy"`
+	CPUCount        int     `json:"cpuCount"`
 	MemoryTotal     uint64  `json:"memoryTotal"`
 	MemoryAvailable uint64  `json:"memoryAvailable"`
 	MemoryUsed      uint64  `json:"memoryUsed"`

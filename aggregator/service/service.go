@@ -31,6 +31,7 @@ func SaveMetrics() {
 				node_name,
 				cpu_total,
 				cpu_busy,
+				cpu_count,
 				memory_total,
 				memory_available,
 				memory_used,
@@ -39,13 +40,14 @@ func SaveMetrics() {
 				network_rx_bytes,
 				network_tx_bytes
 			) VALUES (
-				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
 			)
 		`,
 			m.Timestamp,
 			m.NodeMetric.NodeName,
 			m.NodeMetric.CPUTotal,
 			m.NodeMetric.CPUBusy,
+			m.NodeMetric.CPUCount,
 			m.NodeMetric.MemoryTotal,
 			m.NodeMetric.MemoryAvailable,
 			m.NodeMetric.MemoryUsed,

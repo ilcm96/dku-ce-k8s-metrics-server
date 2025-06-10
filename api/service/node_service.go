@@ -154,5 +154,5 @@ func calculateNodeCpuMillicores(latest, previous *entity.NodeMetrics) float64 {
 		return 0.0
 	}
 
-	return (deltaCpuBusy / deltaCpuTotal) * 1000
+	return (deltaCpuBusy / deltaCpuTotal) * 1000 * float64(latest.CPUCount)
 }

@@ -36,6 +36,7 @@ func CollectNodeMetric() (types.NodeMetric, error) {
 		NodeName:        metadata.NodeName,
 		CPUTotal:        cpuMetric.Total,
 		CPUBusy:         cpuMetric.Busy,
+		CPUCount:        cpuMetric.Count,
 		MemoryTotal:     memoryMetric.Total,
 		MemoryAvailable: memoryMetric.Available,
 		MemoryUsed:      memoryMetric.Used,

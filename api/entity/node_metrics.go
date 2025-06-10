@@ -8,6 +8,7 @@ type NodeMetrics struct {
 	NodeName        string    `db:"node_name"`
 	CPUTotal        float64   `db:"cpu_total"`
 	CPUBusy         float64   `db:"cpu_busy"`
+	CPUCount        int       `db:"cpu_count"`
 	MemoryTotal     int64     `db:"memory_total"`
 	MemoryAvailable int64     `db:"memory_available"`
 	MemoryUsed      int64     `db:"memory_used"`
