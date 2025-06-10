@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metrics-api-svc
+  namespace: metrics-server-ns
+  labels:
+    app: metrics-api
+spec:
+  type: ClusterIP
+  selector:
+    app: metrics-api
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+    protocol: TCP
