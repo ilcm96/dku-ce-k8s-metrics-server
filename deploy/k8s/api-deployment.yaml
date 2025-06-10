@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metrics-api-deployment
+  namespace: metrics-server-ns
+  labels:
+    app: metrics-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metrics-api
+  template:
+    metadata:
+      labels:
+        app: metrics-api
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: metrics-api-container
+        image: ghcr.io/ilcm96/dku-ce-k8s-metrics-server/api:latest
+        imagePullPolicy: Always
+        env:
+        - name: ENV
+          value: "PRODUCTION"
+        - name: DB_USER
+          value: "user"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: DB_PASSWORD
+        - name: DB_HOST
+          value: "db-host"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "database"
