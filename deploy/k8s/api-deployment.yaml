@@ -23,6 +23,8 @@ spec:
         env:
         - name: ENV
           value: "PRODUCTION"
+        - name: PORT
+          value: "8000"
         - name: DB_USER
           value: "user"
         - name: DB_PASSWORD
