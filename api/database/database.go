@@ -13,7 +13,14 @@ import (
 
 var db *sqlx.DB
 
-func Connect() {
+func GetConnection() *sqlx.DB {
+	if db == nil {
+		connect()
+	}
+	return db
+}
+
+func connect() {
 	// 환경 변수에서 데이터베이스 연결 정보 가져오기
 	dsn := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
@@ -39,11 +46,4 @@ func Connect() {
 	db = conn
 
 	slog.Info("database connection established successfully")
-}
-
-func GetConnection() *sqlx.DB {
-	if db == nil {
-		slog.Info("database connection is not established")
-	}
-	return db
 }

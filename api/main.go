@@ -29,7 +29,6 @@ func main() {
 	}
 
 	// 데이터베이스 연결
-	database.Connect()
 	db := database.GetConnection()
 
 	// Fiber 앱 설정
